@@ -6,7 +6,6 @@
         <title>Schedule Campaign</title>
         <style>
             form {
-                max-width: 800px;
                 margin: 0 auto;
             }
             table {
