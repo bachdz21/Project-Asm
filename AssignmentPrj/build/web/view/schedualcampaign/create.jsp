@@ -6,6 +6,7 @@
         <title>Schedule Campaign</title>
         <style>
             form {
+                max-width: 800px;
                 margin: 0 auto;
             }
             table {
@@ -44,23 +45,49 @@
                         <tr>
                             <td>${campaign.product.name}</td>
                             <c:forEach var="date" items="${dates}">
+                                <c:set var="foundQuantityK1" value="" />
+                                <c:set var="foundQuantityK2" value="" />
+                                <c:set var="foundQuantityK3" value="" />
+                                
+                                <!-- Tìm và hiển thị Quantity cho mỗi ca -->
+                                <c:forEach var="schedual" items="${campaign.schedualCampaigns}">
+                                    <c:if test="${schedual.date == date}">
+                                        <c:choose>
+                                            <c:when test="${schedual.shift == 1}">
+                                                <c:set var="foundQuantityK1" value="${schedual.quantity}" />
+                                            </c:when>
+                                            <c:when test="${schedual.shift == 2}">
+                                                <c:set var="foundQuantityK2" value="${schedual.quantity}" />
+                                            </c:when>
+                                            <c:when test="${schedual.shift == 3}">
+                                                <c:set var="foundQuantityK3" value="${schedual.quantity}" />
+                                            </c:when>
+                                        </c:choose>
+                                    </c:if>
+                                </c:forEach>
+
                                 <!-- Shift 1 -->
                                 <td>
-                                    <input type="text" name="quantity_${campaign.product.id}_${date}_1" placeholder="Enter Quantity"/>
+                                    <input type="text" name="quantity_${campaign.product.id}_${date}_1" 
+                                           value="${foundQuantityK1}" placeholder="Enter Quantity"/>
                                     <input type="hidden" name="planCampaignID_${campaign.product.id}_${date}_1" value="${campaign.id}"/>
                                     <input type="hidden" name="shift_${campaign.product.id}_${date}_1" value="1"/>
                                     <input type="hidden" name="date_${campaign.product.id}_${date}_1" value="${date}"/>
                                 </td>
+                                
                                 <!-- Shift 2 -->
                                 <td>
-                                    <input type="text" name="quantity_${campaign.product.id}_${date}_2" placeholder="Enter Quantity"/>
+                                    <input type="text" name="quantity_${campaign.product.id}_${date}_2" 
+                                           value="${foundQuantityK2}" placeholder="Enter Quantity"/>
                                     <input type="hidden" name="planCampaignID_${campaign.product.id}_${date}_2" value="${campaign.id}"/>
                                     <input type="hidden" name="shift_${campaign.product.id}_${date}_2" value="2"/>
                                     <input type="hidden" name="date_${campaign.product.id}_${date}_2" value="${date}"/>
                                 </td>
+                                
                                 <!-- Shift 3 -->
                                 <td>
-                                    <input type="text" name="quantity_${campaign.product.id}_${date}_3" placeholder="Enter Quantity"/>
+                                    <input type="text" name="quantity_${campaign.product.id}_${date}_3" 
+                                           value="${foundQuantityK3}" placeholder="Enter Quantity"/>
                                     <input type="hidden" name="planCampaignID_${campaign.product.id}_${date}_3" value="${campaign.id}"/>
                                     <input type="hidden" name="shift_${campaign.product.id}_${date}_3" value="3"/>
                                     <input type="hidden" name="date_${campaign.product.id}_${date}_3" value="${date}"/>

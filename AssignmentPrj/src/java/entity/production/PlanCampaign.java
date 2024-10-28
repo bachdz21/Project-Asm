@@ -1,14 +1,25 @@
 
 package entity.production;
 
+import java.util.ArrayList;
+
 public class PlanCampaign {
     private int id;
     private Plan plan;
     private Product product;
     private int quantity;
     private float estimate;
-
+    private ArrayList<SchedualCampaign> schedualCampaigns = new ArrayList<>();
+    
     public PlanCampaign() {
+    }
+
+    public ArrayList<SchedualCampaign> getSchedualCampaigns() {
+        return schedualCampaigns;
+    }
+
+    public void setSchedualCampaigns(ArrayList<SchedualCampaign> schedualCampaigns) {
+        this.schedualCampaigns = schedualCampaigns;
     }
 
     public PlanCampaign(int id) {

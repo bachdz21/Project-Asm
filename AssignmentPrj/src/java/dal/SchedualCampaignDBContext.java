@@ -4,6 +4,7 @@
  */
 package dal;
 
+import entity.production.PlanCampaign;
 import entity.production.SchedualCampaign;
 import java.util.ArrayList;
 
@@ -59,6 +60,37 @@ public class SchedualCampaignDBContext extends DBContext<SchedualCampaign> {
     @Override
     public SchedualCampaign get(int id) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public ArrayList<SchedualCampaign> list(PlanCampaign planCampaign) {
+        ArrayList<SchedualCampaign> schedualCampaigns = new ArrayList<>();
+        String sql = "SELECT scID, PlanCampnID, Date, Shift, Quantity FROM SchedualCampaign WHERE PlanCampnID = ?";
+
+        try (PreparedStatement stm = connection.prepareStatement(sql)) {
+            stm.setInt(1, planCampaign.getId());
+            ResultSet rs = stm.executeQuery();
+
+            while (rs.next()) {
+                // Tạo một đối tượng SchedualCampaign mới
+                SchedualCampaign schedualCampaign = new SchedualCampaign();
+                schedualCampaign.setScID(rs.getInt("scID"));
+
+                // Thiết lập PlanCampaign cho SchedualCampaign
+                schedualCampaign.setPlanCampaign(planCampaign);
+
+                // Thiết lập Date, Shift và Quantity
+                schedualCampaign.setDate(rs.getDate("Date"));
+                schedualCampaign.setShift(rs.getInt("Shift"));
+                schedualCampaign.setQuantity(rs.getInt("Quantity"));
+
+                // Thêm đối tượng SchedualCampaign vào danh sách
+                schedualCampaigns.add(schedualCampaign);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(SchedualCampaignDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return schedualCampaigns;
     }
 
 }

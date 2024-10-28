@@ -25,9 +25,13 @@ public class SchedualCampaignCreateController extends BaseRBACController {
 
         PlanDBContext planDB = new PlanDBContext();
         PlanCampaignDBContext plaCamDB = new PlanCampaignDBContext();
+        SchedualCampaignDBContext schedualCampaign = new SchedualCampaignDBContext();
 
         List<Date> dates = planDB.getDateByplanID(planID);
         List<PlanCampaign> planCampains = plaCamDB.list(planID);
+        for (PlanCampaign planCampain : planCampains) {
+            planCampain.getSchedualCampaigns().addAll(schedualCampaign.list(planCampain));
+        }
 
         if (dates != null && !dates.isEmpty() && planCampains != null && !planCampains.isEmpty()) {
             req.setAttribute("dates", dates);
