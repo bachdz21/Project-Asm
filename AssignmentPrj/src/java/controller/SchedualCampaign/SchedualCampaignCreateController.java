@@ -34,6 +34,7 @@ public class SchedualCampaignCreateController extends BaseRBACController {
         }
 
         if (dates != null && !dates.isEmpty() && planCampains != null && !planCampains.isEmpty()) {
+            req.setAttribute("planCampaigns", planCampains);
             req.setAttribute("dates", dates);
             req.setAttribute("xx", planCampains);
             req.getRequestDispatcher("/view/schedualcampaign/create.jsp").forward(req, resp);
@@ -45,6 +46,7 @@ public class SchedualCampaignCreateController extends BaseRBACController {
     @Override
     protected void doAuthorizedPost(HttpServletRequest req, HttpServletResponse resp, User account) throws ServletException, IOException {
         SchedualCampaignDBContext schedualCampaignDB = new SchedualCampaignDBContext();
+        PlanCampaignDBContext plaCamDB = new PlanCampaignDBContext();
 
         List<SchedualCampaign> schedualCampaigns = new ArrayList<>();
         Enumeration<String> parameterNames = req.getParameterNames();
@@ -60,24 +62,30 @@ public class SchedualCampaignCreateController extends BaseRBACController {
                 int quantity = Integer.parseInt(req.getParameter(paramName));
                 int planCampaignId = Integer.parseInt(req.getParameter("planCampaignID_" + productId + "_" + parts[2] + "_" + parts[3]));
 
-                // Create a new SchedualCampaign object
                 SchedualCampaign schedualCampaign = new SchedualCampaign();
                 schedualCampaign.setPlanCampaign(new PlanCampaign(planCampaignId));
                 schedualCampaign.setDate(date);
                 schedualCampaign.setShift(shift);
                 schedualCampaign.setQuantity(quantity);
 
-                // Add to the list
                 schedualCampaigns.add(schedualCampaign);
             }
         }
 
-        // Insert each SchedualCampaign into the database
         for (SchedualCampaign schedualCampaign : schedualCampaigns) {
-            schedualCampaignDB.insert(schedualCampaign);
-        }
+            List<SchedualCampaign> existingCampaigns = schedualCampaignDB.list(schedualCampaign.getPlanCampaign());
 
-        // Redirect or send response
+            boolean exists = existingCampaigns.stream()
+                    .anyMatch(existing -> existing.getDate().equals(schedualCampaign.getDate())
+                    && existing.getShift() == schedualCampaign.getShift());
+
+            if (exists) {
+                schedualCampaignDB.update(schedualCampaign);
+            } else {
+                schedualCampaignDB.insert(schedualCampaign);
+            }
+        }
+        req.getSession().setAttribute("message", "Update successful");
         resp.sendRedirect("/AssignmentPrj/dashboard.jsp");
     }
 

@@ -31,7 +31,7 @@
                             <td>${plans[0].end}</td>
                             <td>
                                 <!-- Thêm liên kết chi tiết chuyển đến `detail.jsp` -->
-                                <a href="${pageContext.request.contextPath}/productionplancampaign/detail?planId=${plans[0].id}">Detail</a>
+                                <a href="${pageContext.request.contextPath}/schedualcampaign/create?planID=${plans[0].id}">Detail</a>
                             </td>
                         </tr>
                         <c:forEach var="plan" items="${plans}" varStatus="status">
@@ -42,7 +42,7 @@
                                     <td>${plan.end}</td>
                                     <td>
                                         <!-- Thêm liên kết chi tiết chuyển đến `detail.jsp` -->
-                                        <a href="${pageContext.request.contextPath}/productionplancampaign/detail?planId=${plan.id}">Detail</a>
+                                        <a href="${pageContext.request.contextPath}/schedualcampaign/create?planID=${plan.id}">Detail</a>
                                     </td>
                                 </tr>
                             </c:if>

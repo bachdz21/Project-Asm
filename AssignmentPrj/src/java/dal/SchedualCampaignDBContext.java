@@ -44,7 +44,20 @@ public class SchedualCampaignDBContext extends DBContext<SchedualCampaign> {
 
     @Override
     public void update(SchedualCampaign entity) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        String sql = "UPDATE SchedualCampaign SET PlanCampnID = ?, Date = ?, Shift = ?, Quantity = ? WHERE scID = ?";
+        try (PreparedStatement stm = connection.prepareStatement(sql)) {
+            // Thiết lập các tham số cho câu lệnh cập nhật
+            stm.setInt(1, entity.getPlanCampaign().getId());  // PlanCampnID
+            stm.setDate(2, entity.getDate());                 // Date
+            stm.setInt(3, entity.getShift());                 // Shift
+            stm.setInt(4, entity.getQuantity());              // Quantity
+            stm.setInt(5, entity.getScID());                  // scID (điều kiện WHERE)
+
+            // Thực hiện cập nhật
+            stm.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(SchedualCampaignDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override

@@ -1,3 +1,6 @@
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,5 +15,10 @@
         <li><a href="/AssignmentPrj/employee/list">List Employee</a></li>
         <li><a href="logout">Logout</a></li>
     </ul>
+    
+    <c:if test="${not empty sessionScope.message}">
+        <p class="message">${sessionScope.message}</p>
+        <c:remove var="message" scope="session" />
+    </c:if>
 </body>
 </html>

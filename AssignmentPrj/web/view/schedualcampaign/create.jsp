@@ -1,17 +1,13 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+
 <!DOCTYPE html>
 <html>
     <head>
         <title>Schedule Campaign</title>
         <style>
-            form {
-                max-width: 800px;
-                margin: 0 auto;
-            }
-            table {
-                width: 100%;
-            }
+
             th, td {
                 padding: 8px;
                 text-align: center;
@@ -22,22 +18,56 @@
         </style>
     </head>
     <body>
+        <h2>Chi tiết Kế Hoạch Sản Xuất</h2>
+
+
+        <c:if test="${not empty planCampaigns}">
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Plan Name</th>
+                        <th>Product Name</th>
+                        <th>Quantity</th>
+                        <th>Estimate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:set var="currentPlanName" value="" />
+                    <c:set var="PlanId" value="" />
+                    <c:forEach var="planCampaign" items="${planCampaigns}" varStatus="status">
+                        <tr>
+                            <c:if test="${currentPlanName != planCampaign.plan.name}">
+                                <td rowspan="${fn:length(planCampaigns.stream().filter(pc -> pc.plan.name.equals(planCampaign.plan.name)).toList())}">
+                                    ${planCampaign.plan.name}
+                                </td>
+                                <c:set var="currentPlanName" value="${planCampaign.plan.name}" />
+                            </c:if>
+                            <td>${planCampaign.product.name}</td>
+                            <td>${planCampaign.quantity}</td>
+                            <td>${planCampaign.estimate}</td>
+                            <c:set var="PlanId" value="${planCampaign.plan.id}" /> <!-- Gán giá trị id -->
+                        </tr>
+                    </c:forEach>
+
+                </tbody>
+            </table>
+        </c:if>
         <h2>Create Schedule for Campaign</h2>
         <form action="create" method="post">
             <table border="1">
                 <thead>
                     <tr>
                         <th rowspan="2">Product</th>
-                        <c:forEach var="date" items="${dates}">
+                            <c:forEach var="date" items="${dates}">
                             <th colspan="3">${date}</th>
-                        </c:forEach>
+                            </c:forEach>
                     </tr>
                     <tr>
                         <c:forEach var="date" items="${dates}">
                             <th>K1</th>
                             <th>K2</th>
                             <th>K3</th>
-                        </c:forEach>
+                            </c:forEach>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,7 +78,7 @@
                                 <c:set var="foundQuantityK1" value="" />
                                 <c:set var="foundQuantityK2" value="" />
                                 <c:set var="foundQuantityK3" value="" />
-                                
+
                                 <!-- Tìm và hiển thị Quantity cho mỗi ca -->
                                 <c:forEach var="schedual" items="${campaign.schedualCampaigns}">
                                     <c:if test="${schedual.date == date}">
@@ -74,7 +104,7 @@
                                     <input type="hidden" name="shift_${campaign.product.id}_${date}_1" value="1"/>
                                     <input type="hidden" name="date_${campaign.product.id}_${date}_1" value="${date}"/>
                                 </td>
-                                
+
                                 <!-- Shift 2 -->
                                 <td>
                                     <input type="text" name="quantity_${campaign.product.id}_${date}_2" 
@@ -83,7 +113,7 @@
                                     <input type="hidden" name="shift_${campaign.product.id}_${date}_2" value="2"/>
                                     <input type="hidden" name="date_${campaign.product.id}_${date}_2" value="${date}"/>
                                 </td>
-                                
+
                                 <!-- Shift 3 -->
                                 <td>
                                     <input type="text" name="quantity_${campaign.product.id}_${date}_3" 
@@ -99,6 +129,10 @@
             </table>
             <br>
             <input type="submit" value="Submit"/>
+            <!-- Kiểm tra và hiển thị thông báo -->
+            <c:if test="${not empty message}">
+                <p class="message">${message}</p>
+            </c:if>
         </form>
         <a href="../dashboard.jsp">Back to Dashboard</a>
     </body>

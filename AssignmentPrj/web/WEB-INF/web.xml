@@ -24,6 +24,10 @@
         <servlet-name>SchedualCampaignCreateController</servlet-name>
         <servlet-class>controller.SchedualCampaign.SchedualCampaignCreateController</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>LogoutController</servlet-name>
+        <servlet-class>controller.accesscontrol.LogoutController</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>ProductionPlanListController</servlet-name>
         <url-pattern>/productionplan/list</url-pattern>
@@ -51,4 +55,11 @@
     <welcome-file-list>
         <welcome-file>login.jsp</welcome-file>
     </welcome-file-list>
+    <servlet-mapping>
+        <servlet-name>LogoutController</servlet-name>
+        <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+    <session-config>
+        <session-timeout>25</session-timeout>
+    </session-config>
 </web-app>
