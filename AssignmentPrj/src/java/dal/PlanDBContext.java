@@ -88,20 +88,12 @@ public class PlanDBContext extends DBContext<Plan> {
     }
 
     @Override
-    public void update(Plan entity) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    @Override
-    public void delete(Plan entity) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    @Override
     public ArrayList<Plan> list() {
         ArrayList<Plan> plans = new ArrayList<>();
         try {
-            String sql = "SELECT p.[PlanID], p.[PlanName], p.[StartDate], p.[EndDate], d.[DepartmentID], d.[DepartmentName], d.[type] FROM [Plan] p INNER JOIN [Department] d ON p.[DepartmentID] = d.[DepartmentID]";
+            String sql = "SELECT p.[PlanID], p.[PlanName], p.[StartDate], p.[EndDate], d.[DepartmentID], d.[DepartmentName], d.[type] "
+                    + "FROM [Plan] p INNER JOIN [Department] d ON p.[DepartmentID] = d.[DepartmentID] "
+                    + "WHERE p.isDeleted = 0";
             PreparedStatement stm = connection.prepareStatement(sql);
             ResultSet rs = stm.executeQuery();
             while (rs.next()) {
@@ -127,6 +119,29 @@ public class PlanDBContext extends DBContext<Plan> {
     }
 
     @Override
+    public void delete(Plan entity) {
+        try {
+            String sql = "UPDATE [Plan] SET isDeleted = 1 WHERE PlanID = ?";
+            PreparedStatement stm = connection.prepareStatement(sql);
+            stm.setInt(1, entity.getId());
+            stm.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    @Override
+    public void update(Plan entity) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
     public Plan get(int id) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
@@ -136,11 +151,11 @@ public class PlanDBContext extends DBContext<Plan> {
         try {
             String sql = "SELECT p.ProductID, p.ProductName FROM Product p "
                     + "INNER JOIN PlanCampaign pc ON p.ProductID = pc.ProductID "
-                    + "WHERE pc.PlanID = ?";
+                    + "INNER JOIN Plan pl ON pc.PlanID = pl.PlanID "
+                    + "WHERE pc.PlanID = ? AND pl.isDeleted = 0";
             PreparedStatement stm = connection.prepareStatement(sql);
             stm.setInt(1, id);
             ResultSet rs = stm.executeQuery();
-
             while (rs.next()) {
                 Product product = new Product();
                 product.setId(rs.getInt("ProductID"));
@@ -184,6 +199,129 @@ public class PlanDBContext extends DBContext<Plan> {
         }
         return dates;
     }
+
+    public void delete(int planID) {
+        try {
+            String sql = "UPDATE [Plan] SET isDeleted = 1 WHERE PlanID = ?";
+            PreparedStatement stm = connection.prepareStatement(sql);
+            stm.setInt(1, planID);
+            stm.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public ArrayList<Plan> listPlanIsDelete() {
+        ArrayList<Plan> deletedPlans = new ArrayList<>();
+        String sql = "SELECT p.[PlanID], p.[PlanName], p.[StartDate], p.[EndDate], d.[DepartmentID], d.[DepartmentName], d.[type] "
+                + "FROM [Plan] p INNER JOIN [Department] d ON p.[DepartmentID] = d.[DepartmentID] "
+                + "WHERE p.isDeleted = 1";
+        try (PreparedStatement stm = connection.prepareStatement(sql); ResultSet rs = stm.executeQuery()) {
+            while (rs.next()) {
+                Department dept = new Department(rs.getInt("DepartmentID"), rs.getString("DepartmentName"), rs.getString("type"));
+                Plan plan = new Plan();
+                plan.setId(rs.getInt("PlanID"));
+                plan.setName(rs.getString("PlanName"));
+                plan.setStart(rs.getDate("StartDate"));
+                plan.setEnd(rs.getDate("EndDate"));
+                plan.setDept(dept);
+                deletedPlans.add(plan);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return deletedPlans;
+    }
+
+    public void restorePlanByPlanID(int planID) {
+        String sql = "UPDATE [Plan] SET isDeleted = 0 WHERE PlanID = ?";
+        try (PreparedStatement stm = connection.prepareStatement(sql)) {
+            stm.setInt(1, planID);
+            stm.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+   public ArrayList<Plan> searchPlans(String title, Date from, Date to, Integer workshop, Integer product) {
+    String sql = "SELECT p.PlanID, p.PlanName, p.StartDate, p.EndDate, d.DepartmentID, d.DepartmentName " +
+                 "FROM Plan p " +
+                 "INNER JOIN Department d ON p.DepartmentID = d.DepartmentID " +
+                 "WHERE (1=1)";
+
+    ArrayList<Plan> plans = new ArrayList<>();
+    ArrayList<Object> paramValues = new ArrayList<>();
+
+    // Lọc theo tiêu chí Plan Name
+    if (title != null && !title.isBlank()) {
+        sql += " AND p.PlanName LIKE '%' + ? + '%'";
+        paramValues.add(title);
+    }
+
+    // Lọc theo ngày bắt đầu
+    if (from != null) {
+        sql += " AND p.StartDate >= ?";
+        paramValues.add(from);
+    }
+
+    // Lọc theo ngày kết thúc
+    if (to != null) {
+        sql += " AND p.EndDate <= ?";
+        paramValues.add(to);
+    }
+
+    // Lọc theo Workshop (Department)
+    if (workshop != null && workshop != -1) {
+        sql += " AND d.DepartmentID = ?";
+        paramValues.add(workshop);
+    }
+
+    // Lọc theo Product
+    if (product != null && product != -1) {
+        sql += " AND EXISTS (SELECT 1 FROM PlanCampaign pc WHERE pc.PlanID = p.PlanID AND pc.ProductID = ?)";
+        paramValues.add(product);
+    }
+
+    PreparedStatement stm = null;
+    try {
+        stm = connection.prepareStatement(sql);
+        for (int i = 0; i < paramValues.size(); i++) {
+            stm.setObject(i + 1, paramValues.get(i));
+        }
+        ResultSet rs = stm.executeQuery();
+        while (rs.next()) {
+            Plan plan = new Plan();
+            plan.setId(rs.getInt("PlanID"));
+            plan.setName(rs.getString("PlanName"));
+            plan.setStart(rs.getDate("StartDate"));
+            plan.setEnd(rs.getDate("EndDate"));
+
+            Department dept = new Department();
+            dept.setId(rs.getInt("DepartmentID"));
+            dept.setName(rs.getString("DepartmentName"));
+            plan.setDept(dept);
+
+            plans.add(plan);
+        }
+    } catch (SQLException ex) {
+        Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+    } finally {
+        try {
+            if (stm != null) stm.close();
+            if (connection != null) connection.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    return plans;
+}
+
 
     public static void main(String[] args) {
         PlanDBContext planDB = new PlanDBContext();

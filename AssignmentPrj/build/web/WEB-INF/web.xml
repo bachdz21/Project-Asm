@@ -28,6 +28,14 @@
         <servlet-name>LogoutController</servlet-name>
         <servlet-class>controller.accesscontrol.LogoutController</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ProductionPlanDeleteController</servlet-name>
+        <servlet-class>controller.productionplan.ProductionPlanDeleteController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ProductionPlanRestoreController</servlet-name>
+        <servlet-class>controller.productionplan.ProductionPlanRestoreController</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>ProductionPlanListController</servlet-name>
         <url-pattern>/productionplan/list</url-pattern>
@@ -58,6 +66,14 @@
     <servlet-mapping>
         <servlet-name>LogoutController</servlet-name>
         <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProductionPlanDeleteController</servlet-name>
+        <url-pattern>/productionplan/delete</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProductionPlanRestoreController</servlet-name>
+        <url-pattern>/productionplan/restore</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>25</session-timeout>

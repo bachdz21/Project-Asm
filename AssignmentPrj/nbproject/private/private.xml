@@ -12,11 +12,10 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/Semester4/PRJ301/BaiTapPrj/AsmPrj/AssignmentPrj/src/java/controller/accesscontrol/LoginController.java</file>
-            <file>file:/D:/Semester4/PRJ301/BaiTapPrj/AsmPrj/AssignmentPrj/web/dashboard.jsp</file>
-            <file>file:/D:/Semester4/PRJ301/BaiTapPrj/AsmPrj/AssignmentPrj/src/java/controller/SchedualCampaign/SchedualCampaignCreateController.java</file>
-            <file>file:/D:/Semester4/PRJ301/BaiTapPrj/AsmPrj/AssignmentPrj/web/view/schedualcampaign/create.jsp</file>
-            <file>file:/D:/Semester4/PRJ301/BaiTapPrj/AsmPrj/AssignmentPrj/src/java/controller/accesscontrol/LogoutController.java</file>
+            <file>file:/D:/Semester4/PRJ301/BaiTapPrj/AsmPrj/AssignmentPrj/web/view/productionplan/list.jsp</file>
+            <file>file:/D:/Semester4/PRJ301/BaiTapPrj/AsmPrj/AssignmentPrj/src/java/dal/PlanDBContext.java</file>
+            <file>file:/D:/Semester4/PRJ301/BaiTapPrj/AsmPrj/AssignmentPrj/src/java/controller/productionplancampaign/ProductionPlanCampaignDetailController.java</file>
+            <file>file:/D:/Semester4/PRJ301/BaiTapPrj/AsmPrj/AssignmentPrj/src/java/controller/productionplan/ProductionPlanListController.java</file>
         </group>
     </open-files>
 </project-private>
