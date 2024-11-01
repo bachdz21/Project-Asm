@@ -15,6 +15,126 @@ import java.util.List;
 
 public class PlanDBContext extends DBContext<Plan> {
 
+    public void deleteByIdPlanAndProduct(int planID, int oldProductId) {
+        String sql = "DELETE FROM PlanCampaign WHERE PlanID = ? AND ProductID = ?";
+        try (PreparedStatement stm = connection.prepareStatement(sql)) {
+            // Thiết lập các tham số PlanID và ProductID cho câu truy vấn
+            stm.setInt(1, planID);
+            stm.setInt(2, oldProductId);
+
+            // Thực thi lệnh xóa
+            stm.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public ArrayList<Plan> searchPlan(String planName, Date date, Integer workshopId, Integer productId) {
+        String sql = "SELECT DISTINCT p.PlanID, p.PlanName, p.StartDate, p.EndDate, d.DepartmentID, d.DepartmentName, d.type "
+                + "FROM [Plan] p "
+                + "INNER JOIN Department d ON p.DepartmentID = d.DepartmentID "
+                + "LEFT JOIN PlanCampaign pc ON p.PlanID = pc.PlanID "
+                + "LEFT JOIN Product pr ON pc.ProductID = pr.ProductID "
+                + "WHERE p.isDeleted = 0 ";
+
+        ArrayList<Object> paramValues = new ArrayList<>();
+
+        if (planName != null && !planName.isEmpty()) {
+            sql += "AND p.PlanName LIKE '%' + ? + '%' ";
+            paramValues.add(planName);
+        }
+
+        if (date != null) {
+            sql += "AND p.StartDate <= ? AND p.EndDate >= ? ";
+            paramValues.add(date);
+            paramValues.add(date);
+        }
+
+        if (workshopId != null) {
+            sql += "AND d.DepartmentID = ? ";
+            paramValues.add(workshopId);
+        }
+
+        if (productId != null) {
+            sql += "AND pr.ProductID = ? ";
+            paramValues.add(productId);
+        }
+
+        ArrayList<Plan> plans = new ArrayList<>();
+        PreparedStatement stm = null;
+
+        try {
+            stm = connection.prepareStatement(sql);
+            for (int i = 0; i < paramValues.size(); i++) {
+                stm.setObject(i + 1, paramValues.get(i));
+            }
+
+            ResultSet rs = stm.executeQuery();
+            while (rs.next()) {
+                Plan plan = new Plan();
+                plan.setId(rs.getInt("PlanID"));
+                plan.setName(rs.getString("PlanName"));
+                plan.setStart(rs.getDate("StartDate"));
+                plan.setEnd(rs.getDate("EndDate"));
+
+                Department dept = new Department(rs.getInt("DepartmentID"), rs.getString("DepartmentName"), rs.getString("type"));
+                plan.setDept(dept);
+
+                // Tải PlanCampaigns và Products cho mỗi Plan
+                plan.setCampaigns(getPlanCampaignsForPlan(plan.getId()));
+
+                plans.add(plan);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (stm != null) {
+                    stm.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        return plans;
+    }
+
+// Hàm để lấy danh sách PlanCampaigns và Products cho một Plan cụ thể
+    public ArrayList<PlanCampaign> getPlanCampaignsForPlan(int planId) {
+        ArrayList<PlanCampaign> campaigns = new ArrayList<>();
+        String sql = "SELECT pc.PlanCampnID, pc.Quantity, pc.Estimate, p.ProductID, p.ProductName "
+                + "FROM PlanCampaign pc "
+                + "INNER JOIN Product p ON pc.ProductID = p.ProductID "
+                + "WHERE pc.PlanID = ?";
+
+        try (PreparedStatement stm = connection.prepareStatement(sql)) {
+            stm.setInt(1, planId);
+
+            ResultSet rs = stm.executeQuery();
+            while (rs.next()) {
+                PlanCampaign campaign = new PlanCampaign();
+                campaign.setId(rs.getInt("PlanCampnID"));
+                campaign.setQuantity(rs.getInt("Quantity"));
+                campaign.setEstimate(rs.getInt("Estimate"));
+
+                Product product = new Product();
+                product.setId(rs.getInt("ProductID"));
+                product.setName(rs.getString("ProductName"));
+                campaign.setProduct(product);
+
+                campaigns.add(campaign);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return campaigns;
+    }
+
     @Override
     public void insert(Plan entity) {
         try {
@@ -138,12 +258,64 @@ public class PlanDBContext extends DBContext<Plan> {
 
     @Override
     public void update(Plan entity) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        try {
+            connection.setAutoCommit(false);
+
+            String sql_update_plan = "UPDATE [Plan] SET PlanName = ?, StartDate = ?, EndDate = ?, DepartmentID = ? WHERE PlanID = ?";
+            try (PreparedStatement stm_update_plan = connection.prepareStatement(sql_update_plan)) {
+                stm_update_plan.setString(1, entity.getName());
+                stm_update_plan.setDate(2, entity.getStart());
+                stm_update_plan.setDate(3, entity.getEnd());
+                stm_update_plan.setInt(4, entity.getDept().getId());
+                stm_update_plan.setInt(5, entity.getId());
+                stm_update_plan.executeUpdate();
+            }
+
+           
+            connection.commit();
+        } catch (SQLException ex) {
+            Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, rollbackEx);
+            }
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     @Override
     public Plan get(int id) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        Plan plan = null;
+        String sql = "SELECT p.PlanID, p.PlanName, p.StartDate, p.EndDate, p.DepartmentID, d.DepartmentName, d.type "
+                + "FROM [Plan] p "
+                + "INNER JOIN Department d ON p.DepartmentID = d.DepartmentID "
+                + "WHERE p.PlanID = ? AND p.isDeleted = 0";
+
+        try (PreparedStatement stm = connection.prepareStatement(sql)) {
+            stm.setInt(1, id);
+            try (ResultSet rs = stm.executeQuery()) {
+                if (rs.next()) {
+                    plan = new Plan();
+                    plan.setId(rs.getInt("PlanID"));
+                    plan.setName(rs.getString("PlanName"));
+                    plan.setStart(rs.getDate("StartDate"));
+                    plan.setEnd(rs.getDate("EndDate"));
+
+                    Department dept = new Department(rs.getInt("DepartmentID"), rs.getString("DepartmentName"), rs.getString("type"));
+                    plan.setDept(dept);
+                    plan.setCampaigns(getPlanCampaignsForPlan(plan.getId()));
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return plan;
     }
 
     public ArrayList<Product> getProductsByplanID(int id) {
@@ -151,7 +323,7 @@ public class PlanDBContext extends DBContext<Plan> {
         try {
             String sql = "SELECT p.ProductID, p.ProductName FROM Product p "
                     + "INNER JOIN PlanCampaign pc ON p.ProductID = pc.ProductID "
-                    + "INNER JOIN Plan pl ON pc.PlanID = pl.PlanID "
+                    + "INNER JOIN [Plan] pl ON pc.PlanID = pl.PlanID "
                     + "WHERE pc.PlanID = ? AND pl.isDeleted = 0";
             PreparedStatement stm = connection.prepareStatement(sql);
             stm.setInt(1, id);
@@ -247,86 +419,6 @@ public class PlanDBContext extends DBContext<Plan> {
         } catch (SQLException ex) {
             Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-   public ArrayList<Plan> searchPlans(String title, Date from, Date to, Integer workshop, Integer product) {
-    String sql = "SELECT p.PlanID, p.PlanName, p.StartDate, p.EndDate, d.DepartmentID, d.DepartmentName " +
-                 "FROM Plan p " +
-                 "INNER JOIN Department d ON p.DepartmentID = d.DepartmentID " +
-                 "WHERE (1=1)";
-
-    ArrayList<Plan> plans = new ArrayList<>();
-    ArrayList<Object> paramValues = new ArrayList<>();
-
-    // Lọc theo tiêu chí Plan Name
-    if (title != null && !title.isBlank()) {
-        sql += " AND p.PlanName LIKE '%' + ? + '%'";
-        paramValues.add(title);
-    }
-
-    // Lọc theo ngày bắt đầu
-    if (from != null) {
-        sql += " AND p.StartDate >= ?";
-        paramValues.add(from);
-    }
-
-    // Lọc theo ngày kết thúc
-    if (to != null) {
-        sql += " AND p.EndDate <= ?";
-        paramValues.add(to);
-    }
-
-    // Lọc theo Workshop (Department)
-    if (workshop != null && workshop != -1) {
-        sql += " AND d.DepartmentID = ?";
-        paramValues.add(workshop);
-    }
-
-    // Lọc theo Product
-    if (product != null && product != -1) {
-        sql += " AND EXISTS (SELECT 1 FROM PlanCampaign pc WHERE pc.PlanID = p.PlanID AND pc.ProductID = ?)";
-        paramValues.add(product);
-    }
-
-    PreparedStatement stm = null;
-    try {
-        stm = connection.prepareStatement(sql);
-        for (int i = 0; i < paramValues.size(); i++) {
-            stm.setObject(i + 1, paramValues.get(i));
-        }
-        ResultSet rs = stm.executeQuery();
-        while (rs.next()) {
-            Plan plan = new Plan();
-            plan.setId(rs.getInt("PlanID"));
-            plan.setName(rs.getString("PlanName"));
-            plan.setStart(rs.getDate("StartDate"));
-            plan.setEnd(rs.getDate("EndDate"));
-
-            Department dept = new Department();
-            dept.setId(rs.getInt("DepartmentID"));
-            dept.setName(rs.getString("DepartmentName"));
-            plan.setDept(dept);
-
-            plans.add(plan);
-        }
-    } catch (SQLException ex) {
-        Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
-    } finally {
-        try {
-            if (stm != null) stm.close();
-            if (connection != null) connection.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(PlanDBContext.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    return plans;
-}
-
-
-    public static void main(String[] args) {
-        PlanDBContext planDB = new PlanDBContext();
-        List<Product> products = planDB.getProductsByplanID(1);
-        System.out.println(products);
     }
 
 }

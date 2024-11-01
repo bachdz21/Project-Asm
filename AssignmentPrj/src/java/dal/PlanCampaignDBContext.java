@@ -8,21 +8,60 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class PlanCampaignDBContext extends DBContext<PlanCampaign> {
-
     @Override
     public void insert(PlanCampaign entity) {
-        // Insert logic here
-    }
+        String sql = "INSERT INTO PlanCampaign (PlanID, ProductID, Quantity, Estimate) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement stm = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // Thiết lập các giá trị cho các tham số trong câu lệnh SQL
+            stm.setInt(1, entity.getPlan().getId());        // PlanID
+            stm.setInt(2, entity.getProduct().getId());     // ProductID
+            stm.setInt(3, entity.getQuantity());            // Quantity
+            stm.setFloat(4, entity.getEstimate());          // Estimate
 
-    @Override
-    public void update(PlanCampaign entity) {
-        throw new UnsupportedOperationException("Not supported yet.");
+            // Thực thi lệnh INSERT
+            stm.executeUpdate();
+
+            // Lấy khóa chính tự động tạo (nếu cần)
+            ResultSet generatedKeys = stm.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                entity.setId(generatedKeys.getInt(1)); // Đặt ID vừa tạo cho PlanCampaign
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PlanCampaignDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
+    
+    @Override
+public void update(PlanCampaign entity) {
+    String sql = "UPDATE PlanCampaign SET Quantity = ?, Estimate = ? WHERE PlanID = ? AND ProductID = ?";
+    try (PreparedStatement stm = connection.prepareStatement(sql)) {
+        // Thiết lập các giá trị cho các tham số trong câu lệnh SQL
+        stm.setInt(1, entity.getQuantity());            // Quantity
+        stm.setFloat(2, entity.getEstimate());          // Estimate
+        stm.setInt(3, entity.getPlan().getId());        // PlanID
+        stm.setInt(4, entity.getProduct().getId());     // ProductID
+        
+        // Thực thi lệnh UPDATE
+        stm.executeUpdate();
+    } catch (SQLException ex) {
+        Logger.getLogger(PlanCampaignDBContext.class.getName()).log(Level.SEVERE, null, ex);
+    }
+}
 
     @Override
     public void delete(PlanCampaign entity) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String sql = "DELETE FROM PlanCampaign WHERE PlanCampnID = ?";
+        try (PreparedStatement stm = connection.prepareStatement(sql)) {
+            // Thiết lập giá trị cho tham số PlanCampnID
+            stm.setInt(1, entity.getId());
+
+            // Thực thi lệnh DELETE
+            stm.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(PlanCampaignDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
+    
 
     @Override
     public ArrayList<PlanCampaign> list() {
@@ -189,4 +228,47 @@ public class PlanCampaignDBContext extends DBContext<PlanCampaign> {
         PlanCampaignDBContext db = new PlanCampaignDBContext();
             System.out.println(db.getPlanCampnIDByplanIDAndproductID(14, 1));
     }
+        
+       public void deleteByPlanIDAndProductID(int planID, int productID) {
+        String sqlDeleteSchedualCampaign = "DELETE FROM SchedualCampaign WHERE PlanCampnID IN "
+                + "(SELECT PlanCampnID FROM PlanCampaign WHERE PlanID = ? AND ProductID = ?)";
+        String sqlDeletePlanCampaign = "DELETE FROM PlanCampaign WHERE PlanID = ? AND ProductID = ?";
+
+        try {
+            // Bắt đầu một transaction để đảm bảo cả hai câu lệnh đều được thực hiện
+            connection.setAutoCommit(false);
+
+            // Xóa các bản ghi trong SchedualCampaign liên quan đến PlanCampaign cụ thể
+            try (PreparedStatement stm1 = connection.prepareStatement(sqlDeleteSchedualCampaign)) {
+                stm1.setInt(1, planID);
+                stm1.setInt(2, productID);
+                stm1.executeUpdate();
+            }
+
+            // Xóa bản ghi trong PlanCampaign
+            try (PreparedStatement stm2 = connection.prepareStatement(sqlDeletePlanCampaign)) {
+                stm2.setInt(1, planID);
+                stm2.setInt(2, productID);
+                stm2.executeUpdate();
+            }
+
+            // Xác nhận transaction
+            connection.commit();
+
+        } catch (SQLException ex) {
+            try {
+                // Rollback nếu có lỗi xảy ra
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                Logger.getLogger(PlanCampaignDBContext.class.getName()).log(Level.SEVERE, null, rollbackEx);
+            }
+            Logger.getLogger(PlanCampaignDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                Logger.getLogger(PlanCampaignDBContext.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    } 
 }

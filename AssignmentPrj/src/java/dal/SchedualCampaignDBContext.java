@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import entity.production.SchedualCampaign;
 import java.sql.*;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +19,38 @@ import java.util.logging.Logger;
  * @author Admin
  */
 public class SchedualCampaignDBContext extends DBContext<SchedualCampaign> {
+
+    public void deleteByIdPlanAndDate(int planID, List<Date> oldDates) {
+        if (oldDates.isEmpty()) {
+            return;  // Nếu danh sách ngày cũ trống, không cần xóa gì cả
+        }
+        // Tạo một câu truy vấn để xóa với các ngày được chỉ định trong oldDates
+        StringBuilder sql = new StringBuilder("DELETE FROM SchedualCampaign WHERE PlanCampnID IN ");
+        sql.append("(SELECT PlanCampnID FROM PlanCampaign WHERE PlanID = ?) AND Date IN (");
+
+        // Thêm từng dấu chấm hỏi cho mỗi ngày để dùng trong PreparedStatement
+        for (int i = 0; i < oldDates.size(); i++) {
+            sql.append("?");
+            if (i < oldDates.size() - 1) {
+                sql.append(", ");
+            }
+        }
+        sql.append(")");
+
+        try (PreparedStatement stm = connection.prepareStatement(sql.toString())) {
+            stm.setInt(1, planID);  // Thiết lập tham số planID
+
+            // Thiết lập các ngày trong danh sách oldDates cho PreparedStatement
+            for (int i = 0; i < oldDates.size(); i++) {
+                stm.setDate(i + 2, oldDates.get(i));  // +2 vì planID là tham số đầu tiên
+            }
+
+            // Thực hiện câu lệnh xóa
+            stm.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(SchedualCampaignDBContext.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     @Override
     public void insert(SchedualCampaign entity) {

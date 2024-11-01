@@ -22,5 +22,7 @@
             <p class="message">${sessionScope.message}</p>
             <c:remove var="message" scope="session" />
         </c:if>
+
+        
     </body>
 </html>
