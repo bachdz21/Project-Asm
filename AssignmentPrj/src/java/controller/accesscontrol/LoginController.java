@@ -20,10 +20,11 @@ protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws S
 
     if (account != null) {
         // Set session attribute
+        req.getSession().setAttribute("username", account.getUsername()); // Lưu tên người dùng vào session
         req.getSession().setAttribute("account", account);
 
         // Redirect to the dashboard page
-        resp.sendRedirect("dashboard.jsp");
+        resp.sendRedirect("/AssignmentPrj/home");
     } else {
         // Set error message attribute and forward to login page
         req.setAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không đúng!");

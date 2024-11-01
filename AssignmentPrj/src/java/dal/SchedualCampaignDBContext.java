@@ -19,6 +19,24 @@ import java.util.logging.Logger;
  * @author Admin
  */
 public class SchedualCampaignDBContext extends DBContext<SchedualCampaign> {
+    
+    public void updateScedulCampaignByDateAndShiftAndPlanCampaignId(int planCampaignId, Date date, int shift, int newQuantity) {
+        String sql = "UPDATE SchedualCampaign SET quantity = ? WHERE date = ? AND shift = ? AND PlanCampnID = ?";
+        try (PreparedStatement stm = connection.prepareStatement(sql)) { 
+            // Thiết lập giá trị cho các tham số trong câu truy vấn
+            stm.setInt(1, newQuantity);      // Giá trị mới cho `quantity`
+            stm.setDate(2, date);            // Giá trị cho `date`
+            stm.setInt(3, shift);            // Giá trị cho `shift`
+            stm.setInt(4, planCampaignId);   // Giá trị cho `planCampaignId`
+            
+            // Thực thi câu truy vấn
+            stm.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Xử lý ngoại lệ nếu cần
+        }
+    }
+
 
     public void deleteByIdPlanAndDate(int planID, List<Date> oldDates) {
         if (oldDates.isEmpty()) {

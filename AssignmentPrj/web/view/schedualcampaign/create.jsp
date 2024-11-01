@@ -1,27 +1,126 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Schedule Campaign</title>
-        <style>
-            th, td {
-                padding: 8px;
-                text-align: center;
-            }
-            input[type="text"] {
-                width: 100%;
-            }
-        </style>
-    </head>
-    <body>
+<head>
+    <title>Schedule Campaign</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #ecf0f1;
+            margin-bottom: 20px;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #34495e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #4a6a8b;
+            text-align: center;
+        }
+
+        th:first-child, td:first-child {
+            width: 180px; /* Tăng độ rộng cột Date */
+        }
+
+        th {
+            background-color: #3b4a6b;
+            color: #ecf0f1;
+        }
+
+        td {
+            background-color: #f1f1f1;
+            color: #2c3e50;
+        }
+
+        td input[type="text"] {
+            width: 75%;
+            padding: 8px;
+            border: 1px solid #34495e;
+            border-radius: 4px;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+        }
+
+        td input[type="text"]:focus {
+            background-color: #ffffff;
+            outline: none;
+            border-color: #1abc9c;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            max-width: 200px;
+            padding: 10px;
+            margin: 20px auto;
+            background-color: #1abc9c;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+
+        .submit-btn:hover {
+            background-color: #16a085;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            color: #2980b9;
+        }
+
+        .message {
+            background-color: #27ae60;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
         <h2>Chi tiết Kế Hoạch Sản Xuất</h2>
 
         <form action="create" method="POST">
             <c:if test="${not empty planCampaigns}">
-                <table border="1">
+                <table>
                     <thead>
                         <tr>
                             <th>Plan Name</th>
@@ -47,10 +146,10 @@
                                 <c:set var="PlanId" value="${planCampaign.plan.id}" /> <!-- Gán giá trị id -->
                             </tr>
                         </c:forEach>
-
                     </tbody>
                 </table>
-            </c:if><br><!-- comment -->
+            </c:if><br>
+
 
             <c:if test="${not empty planCampaigns}">
                 <table border="1">
@@ -131,12 +230,13 @@
             </c:if>
 
             <br>
-            <input type="submit" value="Submit"/>
-            <!-- Kiểm tra và hiển thị thông báo -->
-            <c:if test="${not empty message}">
-                <p class="message">${message}</p>
-            </c:if>
+            
+            <input type="submit" class="submit-btn" value="Submit"/>
+
+            
         </form>
-        <a href="../dashboard.jsp">Back to Dashboard</a>
-    </body>
+        
+        <a href="/AssignmentPrj/home" class="back-link">Back to Dashboard</a>
+    </div>
+</body>
 </html>

@@ -4,21 +4,116 @@
 <html>
     <head>
         <title>Update Production Plan</title>
+        <style>
+            /* Global Style */
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #2c3e50;
+                color: #ecf0f1;
+                padding: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+            }
+            h2 {
+                color: #ecf0f1;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            form {
+                background-color: #34495e;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                max-width: 600px;
+                width: 100%;
+            }
+            label {
+                display: block;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+            input[type="text"],
+            input[type="date"],
+            select {
+                width: calc(100% - 20px);
+                padding: 10px;
+                margin-bottom: 15px;
+                border: 1px solid #34495e;
+                border-radius: 4px;
+                background-color: #ecf0f1;
+                color: #2c3e50;
+                box-sizing: border-box;
+            }
+            input[type="text"]:focus,
+            input[type="date"]:focus,
+            select:focus {
+                background-color: #ffffff;
+                outline: none;
+                border-color: #1abc9c;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+                background-color: #34495e;
+                color: #ecf0f1;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+            th, td {
+                padding: 12px;
+                text-align: center;
+                border: 1px solid #4a6a8b;
+            }
+            th {
+                background-color: #3b4a6b;
+            }
+            td input[type="text"] {
+                width: 90%;
+                padding: 8px;
+                background-color: #ecf0f1;
+                color: #2c3e50;
+                border: 1px solid #34495e;
+                border-radius: 4px;
+            }
+            .submit-btn {
+                background-color: #1abc9c;
+                color: #ffffff;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 16px;
+                margin-top: 15px;
+                transition: background-color 0.3s;
+                display: block;
+                width: 100%;
+                text-align: center;
+            }
+            .submit-btn:hover {
+                background-color: #16a085;
+            }
+            .back-link {
+                margin-top: 20px;
+                color: #3498db;
+                text-decoration: none;
+                font-weight: bold;
+            }
+            .back-link:hover {
+                color: #2980b9;
+            }
+        </style>
         <script>
             function validateForm() {
-                // Lấy các trường cần kiểm tra
                 const planTitle = document.forms["updateForm"]["name"].value;
                 const fromDate = document.forms["updateForm"]["from"].value;
                 const toDate = document.forms["updateForm"]["to"].value;
                 const workshop = document.forms["updateForm"]["did"].value;
 
-                // Kiểm tra các trường để trống và hiển thị thông báo nếu có
                 const from = new Date(fromDate);
                 const to = new Date(toDate);
-                if (from >= to) {
-                    alert("The From date must be earlier than the To date");
-                    return false;
-                }
+
                 if (planTitle === "") {
                     alert("Plan Title cannot be empty");
                     return false;
@@ -35,7 +130,11 @@
                     alert("Please select a Workshop");
                     return false;
                 }
-                return true; // Nếu tất cả các trường đều hợp lệ, cho phép gửi biểu mẫu
+                if (from >= to) {
+                    alert("The From date must be earlier than the To date");
+                    return false;
+                }
+                return true;
             }
         </script>
     </head>
@@ -43,20 +142,22 @@
         <h2>Update Production Plan</h2>
         <form name="updateForm" action="update" method="POST" onsubmit="return validateForm()">
             <input type="hidden" name="planID" value="${plan.id}"/>
-            Plan Title: <input type="text" name="name" value="${plan.name}"/> <br/>
-            From: <input type="date" name="from" value="${plan.start}"/> 
-            To: <input type="date" name="to" value="${plan.end}"/> <br/>
+            <label>Plan Title:</label>
+            <input type="text" name="name" value="${plan.name}"/>
             
-            <!-- Dropdown Workshop -->
-            Workshop:
+            <label>From:</label>
+            <input type="date" name="from" value="${plan.start}"/> 
+            <label>To:</label>
+            <input type="date" name="to" value="${plan.end}"/> 
+            
+            <label>Workshop:</label>
             <select name="did">
                 <c:forEach items="${depts}" var="d">
                     <option value="${d.id}" ${plan.dept.id == d.id ? 'selected="selected"' : ''}>${d.name}</option>
                 </c:forEach>
-            </select> <br/>
+            </select>
 
-            <!-- Hiển thị tất cả các sản phẩm -->
-            <table border="1">
+            <table>
                 <tr>
                     <th>Product</th>
                     <th>Quantity</th>
@@ -65,8 +166,6 @@
                 
                 <c:forEach items="${products}" var="product">
                     <c:set var="existingCampaign" value="${null}" />
-
-                    <!-- Kiểm tra xem sản phẩm này đã có trong plan chưa -->
                     <c:forEach items="${plan.campaigns}" var="campaign">
                         <c:if test="${campaign.product.id == product.id}">
                             <c:set var="existingCampaign" value="${campaign}" />
@@ -89,9 +188,8 @@
                 </c:forEach>
             </table>
             
-            <input type="submit" value="Save"/>
+            <input type="submit" class="submit-btn" value="Save"/>
         </form>
-        <br>
-        <a href="../dashboard.jsp">Back to Dashboard</a>
+        <a href="/AssignmentPrj/home" class="back-link">Back to Dashboard</a>
     </body>
 </html>

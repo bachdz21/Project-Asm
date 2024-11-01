@@ -79,10 +79,10 @@ public class ProductionPlanCreateController extends BaseRBACController {
 
                 // Set thông báo thành công và chuyển hướng về dashboard
                 request.getSession().setAttribute("message", "Create successful plan: " + plan.getName()+"!");
-                response.sendRedirect("/AssignmentPrj/dashboard.jsp");
+                response.sendRedirect("/AssignmentPrj/home");
             } else {
                 request.getSession().setAttribute("message", "Create unsuccessful. Your plan does not have any products/campaigns!");
-                response.sendRedirect("/AssignmentPrj/dashboard.jsp");
+                response.sendRedirect("/AssignmentPrj/home");
                 
             }
         }

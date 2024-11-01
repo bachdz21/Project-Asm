@@ -55,6 +55,14 @@ public class SchedualCampaignCreateController extends BaseRBACController {
             String paramName = parameterNames.nextElement();
 
             if (paramName.startsWith("quantity_")) {
+                String quantityStr = req.getParameter(paramName);
+            
+            // Kiểm tra nếu ô quantity để trống hoặc có giá trị <= 0 thì bỏ qua
+            if (quantityStr == null || quantityStr.isEmpty() || Integer.parseInt(quantityStr) <= 0) {
+                continue;
+            }
+
+                
                 String[] parts = paramName.split("_");
                 int productId = Integer.parseInt(parts[1]);
                 Date date = Date.valueOf(req.getParameter("date_" + productId + "_" + parts[2] + "_" + parts[3]));
@@ -80,13 +88,13 @@ public class SchedualCampaignCreateController extends BaseRBACController {
                     && existing.getShift() == schedualCampaign.getShift());
 
             if (exists) {
-                schedualCampaignDB.update(schedualCampaign);
+                schedualCampaignDB.updateScedulCampaignByDateAndShiftAndPlanCampaignId(schedualCampaign.getPlanCampaign().getId(), schedualCampaign.getDate(), schedualCampaign.getShift(), schedualCampaign.getQuantity());
             } else {
                 schedualCampaignDB.insert(schedualCampaign);
             }
         }
         req.getSession().setAttribute("message", "Update successful");
-        resp.sendRedirect("/AssignmentPrj/dashboard.jsp");
+        resp.sendRedirect("/AssignmentPrj/productionplan/list");
     }
 
     public static void main(String[] args) {

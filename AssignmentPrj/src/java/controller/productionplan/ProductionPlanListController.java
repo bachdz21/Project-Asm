@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.sql.*;
+import java.util.Comparator;
 
 public class ProductionPlanListController extends BaseRBACController {
 
@@ -36,6 +37,12 @@ public class ProductionPlanListController extends BaseRBACController {
         PlanDBContext dbPlan = new PlanDBContext();
         ArrayList<Plan> plans = dbPlan.searchPlan(planName, date, workshopId, productId);
 
+        plans.sort(Comparator
+        .comparing((Plan plan) -> plan.getDept().getName())          // Tên department
+        .thenComparing(Plan::getStart)                           // Start date
+        .thenComparing(Plan::getEnd)                             // End date
+        .thenComparing(Plan::getName)                                // Plan name
+        .thenComparing(plan -> plan.getCampaigns().size()));        // Product name
         // Nhóm các kế hoạch theo Workshop
         Map<String, List<Plan>> plansByWorkshop = new LinkedHashMap<>();
         for (Plan plan : plans) {
