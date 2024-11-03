@@ -18,7 +18,7 @@
             flex-direction: column;
         }
         h2 {
-            margin-top: 700px;
+            margin-top: 800px;
             color: #ecf0f1;
             text-align: center;
         }
@@ -70,7 +70,7 @@
         }
         .back-link:hover {
             color: #2980b9;
-            margin-bottom: 100px;
+            margin-bottom: 50px;
             background-color: #2980b9;
         }
    
